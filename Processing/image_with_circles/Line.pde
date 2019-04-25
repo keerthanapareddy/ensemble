@@ -31,9 +31,11 @@ class Line {
       xPos1 = xPos1+velocity;
       xPos2 = xPos2+velocity;
     }
-    xPos1 = constrain(xPos1, 0, width);
-    xPos2 = constrain(xPos2, 0, width);   
+    xPos1 = constrain(xPos1, 0, width-10);
+    xPos2 = constrain(xPos2, 0, width-10);   
     velocity = constrain(velocity, 0, 45);
+    
+    //println("r");
   }
 
   void moveDown() {
@@ -42,21 +44,25 @@ class Line {
       yPos1 = yPos1+velocity;
       yPos2 = yPos2+velocity;
     }
-    yPos1 = constrain(yPos1, 0, height);
-    yPos2 = constrain(yPos2, 0, height);
+    yPos1 = constrain(yPos1, 0, height-10);
+    yPos2 = constrain(yPos2, 0, height-10);
     velocity = constrain(velocity, 0, 45);
+    //println("d");
   }
 
   void moveLeft() {
     velocity = velocity-1;//can remove this if velocity gets mapped to springlength
 
+
     if (velocity > 0) {
       xPos1 = xPos1-velocity;
       xPos2 = xPos2-velocity;
     }
-    xPos1 = constrain(xPos1, 0, width);
-    xPos2 = constrain(xPos2, 0, width);
+    xPos1 = constrain(xPos1, 0, width-10);
+    xPos2 = constrain(xPos2, 0, width-10);
     velocity = constrain(velocity, 0, 45);
+
+    //println("l");
   }
 
   void moveUp() {
@@ -67,52 +73,53 @@ class Line {
     if (velocity > 0) {
       yPos1 = yPos1-velocity;
       yPos2 = yPos2-velocity;
-      
     }
-    
-    yPos1 = constrain(yPos1, 0, height);
-    yPos2 = constrain(yPos2, 0, height);
+
+    yPos1 = constrain(yPos1, 0, height-10);
+    yPos2 = constrain(yPos2, 0, height-10);
     velocity = constrain(velocity, 0, 45);
+
+     //println("u");
   }
 
   void resetLeft() {
     velocity = 0;
     stroke(c);
     strokeWeight(3);
-    xPos1 =  0;
-    yPos1 =0;
-    xPos2 = 0;
-    yPos2 =height;
+    xPos1 =  10;
+    yPos1 = 10;
+    xPos2 = 10;
+    yPos2 = height-10;
   }
 
   void resetRight() {
     velocity = 0;
     stroke(c);
     strokeWeight(3);
-    xPos1 =  width;
-    yPos1 =0;
-    xPos2 = width;
-    yPos2 =height;
+    xPos1 =  width-10;
+    yPos1 =10;
+    xPos2 = width-10;
+    yPos2 =height-10;
   }
 
   void resetTop() {
     velocity = 0;
     stroke(c);
     strokeWeight(3);
-    xPos1 =  0;
-    yPos1 =0;
-    xPos2 = width;
-    yPos2 =0;
+    xPos1 =  10;
+    yPos1 =10;
+    xPos2 = width-10;
+    yPos2 =10;
   }
 
   void resetBottom() {
     velocity = 0;
     stroke(c);
     strokeWeight(3);
-    xPos1 =  0;
-    yPos1 =height;
-    xPos2 = width;
-    yPos2 =height;
+    xPos1 =  10;
+    yPos1 =height-10;
+    xPos2 = width-10;
+    yPos2 =height-10;
   }
 
   void setVelocity(float v) {

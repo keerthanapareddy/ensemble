@@ -18,9 +18,11 @@ int inByte; //value from arduino with initial value as rest position
 
 boolean isCirclePresent[];
 
+char sendChar[]={'A', 'Q', 'W', 'E', 'R'};
+
 boolean velocityIsZero = false;
 
-int lineNumber = 0;
+int lineNumber =0;
 
 int loc;
 
@@ -29,6 +31,9 @@ int x0, x1, y0, y1 = 0;
 
 float xLeft, xRight, yTop, yBottom;
 float xLeftFinal, xRightFinal, yTopFinal, yBottomFinal;
+
+boolean firstContact = false;
+int serialCount = 0;  
 
 Line lineLeft;
 Line lineRight;
@@ -40,12 +45,12 @@ Circle pixelCircle;
 
 void setup() {
   //fullScreen();
-  size(1000, 1000);
+  size(800, 800);
 
   String portName = "/dev/cu.usbmodem1421";
   myPort = new Serial(this, portName, 9600);
 
-  img = loadImage("minion.jpg");  // Make a new instance of a PImage by loading an image file
+  img = loadImage("avengers.jpg");  // Make a new instance of a PImage by loading an image file
   background(255);
   smooth();
   cellSize = 5; //radius of the circle
@@ -67,7 +72,10 @@ void setup() {
     isCirclePresent[i] = false;
   }
 
-  colorMode(RGB, 100);
+  //println(lineNumber);
+  //myPort.write(sendChar[lineNumber]);
+
+  colorMode(RGB);
 
   yBottom = height-10;
   xRight = width-10;
@@ -76,10 +84,10 @@ void setup() {
 
 
   //initialLineVelocity = map(springDisplacement, 20, 160, 0, 42.85); //20 ~ the distance it travels 
-  lineLeft = new Line(xLeft, 0, xLeft, height, initialLineVelocity, color(0, 0, 0));
-  lineRight = new Line(xRight, 0, xRight, height, initialLineVelocity, color(255, 0, 0));
-  lineTop = new Line(0, yTop, width, yTop, initialLineVelocity, color(0, 0, 255));
-  lineBottom = new Line(0, yBottom, width, yBottom, initialLineVelocity, color(0, 255, 0));
+  lineLeft = new Line(xLeft, 0, xLeft, height, initialLineVelocity, color(253, 180, 21));
+  lineRight = new Line(xRight, 0, xRight, height, initialLineVelocity, color(243, 69, 74)); 
+  lineTop = new Line(0, yTop, width, yTop, initialLineVelocity, color(25, 138, 236)); 
+  lineBottom = new Line(0, yBottom, width, yBottom, initialLineVelocity, color(0, 148, 75)); 
 }
 
 void draw() {
@@ -87,14 +95,17 @@ void draw() {
   constrainVelocities();
   displayLines();
   moveLines();
-  
+
   if (lineNumber == 4 && lineRight.velocity == 0 ) {
     drawCircles(yTopFinal, yBottomFinal, xRightFinal, xLeftFinal);
+    //
+  }
+  if (lineNumber == 0) {
     resetLines();
   }
-  
   delay(10);
 }
+
 
 void displayLines() {
   if (lineBottom.velocity == 0) 
@@ -175,7 +186,7 @@ void moveLines() {
       yTopFinal = lineTop.yPos2;
     }
   } 
-  
+
   if (lineNumber == 4) {
     lineRight.moveLeft();
     if (lineRight.velocity == 0) {
@@ -187,8 +198,12 @@ void moveLines() {
 
 
 void triggerLineMove() {
-  print("initialLineVelocity:"); 
-  println(initialLineVelocity);
+  //print("initialLineVelocity:"); 
+  //println(initialLineVelocity);
+  if (lineNumber >= 0 && lineNumber < 5)
+
+    myPort.write(sendChar[lineNumber]);
+
   if (lineNumber == 1) {
     lineBottom.setVelocity(initialLineVelocity);
   }
@@ -204,25 +219,38 @@ void triggerLineMove() {
   if (lineNumber == 4) {
     lineRight.setVelocity(initialLineVelocity);
   }
-  if(lineNumber > 4){
+
+  if (lineNumber > 4) {
     lineNumber = 0;
   }
 }
 
 
-void serialEvent (Serial myPort) {
+String inString = "";
 
+void serialEvent (Serial myPort) {
+  println("something happened");
   while (myPort.available()>0) {
     inByte = myPort.read();
-    //print("inByte:");
-    //println(inByte);
-    lineNumber++; 
-    print("Line Number:"); 
-    println(lineNumber);
-    initialLineVelocity = map(inByte, 42, 103, 0, 45);
-    triggerLineMove() ;
+    int inputValue = 50;
+    println("input : " + inByte);
+    if (inByte == 10) {
+      inputValue = Integer.parseInt(trim(inString));
+      println("got " + inputValue + " from " + inString);
+      inString = "";
+      lineNumber++; 
+      //print("Line Number:"); 
+      //println(lineNumber);
+      initialLineVelocity = map(inputValue, 42, 103, 0, 45);
+      triggerLineMove();
+    } else {
+      inString += char(inByte);
+    }
   }
 }
+
+
+
 
 
 ////key presses
