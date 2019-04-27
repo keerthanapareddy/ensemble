@@ -39,13 +39,12 @@ Line lineLeft;
 Line lineRight;
 Line lineTop;
 Line lineBottom;
-int lineCounter=1;
 Circle pixelCircle;
 
 
 void setup() {
   //fullScreen();
-  size(800, 800);
+  size(1000, 1000);
 
   String portName = "/dev/cu.usbmodem1421";
   myPort = new Serial(this, portName, 9600);
@@ -87,7 +86,10 @@ void setup() {
   lineLeft = new Line(xLeft, 0, xLeft, height, initialLineVelocity, color(253, 180, 21));
   lineRight = new Line(xRight, 0, xRight, height, initialLineVelocity, color(243, 69, 74)); 
   lineTop = new Line(0, yTop, width, yTop, initialLineVelocity, color(25, 138, 236)); 
-  lineBottom = new Line(0, yBottom, width, yBottom, initialLineVelocity, color(0, 148, 75)); 
+  lineBottom = new Line(0, yBottom, width, yBottom, initialLineVelocity, color(0, 148, 75));
+
+  myPort.write(sendChar[0]);
+  println(sendChar[0]);
 }
 
 void draw() {
@@ -98,12 +100,7 @@ void draw() {
 
   if (lineNumber == 4 && lineRight.velocity == 0 ) {
     drawCircles(yTopFinal, yBottomFinal, xRightFinal, xLeftFinal);
-    //
   }
-  if (lineNumber == 0) {
-    resetLines();
-  }
-  delay(10);
 }
 
 
@@ -171,26 +168,24 @@ void moveLines() {
       // println(yBottomFinal);
     }
   } 
-
-  if (lineNumber == 2) {
+  else if (lineNumber == 2) {
     //println(lineLeft.velocity);
     lineLeft.moveRight();
     if (lineLeft.velocity == 0) {
       xLeftFinal = lineLeft.xPos2;
     }
   } 
-
-  if (lineNumber == 3) {
+  else if (lineNumber == 3) {
     lineTop.moveDown();
     if (lineTop.velocity == 0) {
       yTopFinal = lineTop.yPos2;
     }
   } 
-
-  if (lineNumber == 4) {
+  else if (lineNumber == 4) {
     lineRight.moveLeft();
     if (lineRight.velocity == 0) {
       xRightFinal = lineRight.xPos2;
+      resetLines();
     }
   } else {
   }
@@ -200,11 +195,13 @@ void moveLines() {
 void triggerLineMove() {
   //print("initialLineVelocity:"); 
   //println(initialLineVelocity);
-  if (lineNumber >= 0 && lineNumber < 5)
+  if (lineNumber > 0 && lineNumber < 5)
 
     myPort.write(sendChar[lineNumber]);
 
+
   if (lineNumber == 1) {
+    
     lineBottom.setVelocity(initialLineVelocity);
   }
 
@@ -229,16 +226,20 @@ void triggerLineMove() {
 String inString = "";
 
 void serialEvent (Serial myPort) {
-  println("something happened");
+
   while (myPort.available()>0) {
     inByte = myPort.read();
     int inputValue = 50;
-    println("input : " + inByte);
+    //println("input : " + inByte);
     if (inByte == 10) {
       inputValue = Integer.parseInt(trim(inString));
       println("got " + inputValue + " from " + inString);
       inString = "";
       lineNumber++; 
+
+      //String inBuffer = myPort.readString();  
+      //println("input : " + inByte);
+      
       //print("Line Number:"); 
       //println(lineNumber);
       initialLineVelocity = map(inputValue, 42, 103, 0, 45);
@@ -248,18 +249,3 @@ void serialEvent (Serial myPort) {
     }
   }
 }
-
-
-
-
-
-////key presses
-//void keyPressed() {
-//  switch(key) {
-//  case '1':
-//    lineNumber = 5;
-//    resetLines();
-//    //resetAllLines();
-//    break;
-//  }
-//}
