@@ -97,7 +97,7 @@ void draw() {
   background(255, 255, 255);
   constrainVelocities();
   displayLines();
-  //blinkLines();
+  blinkLines();
   moveLines();
   if (lineRight.velocity == 0 && lineNumber == 0) {
     findCircles(yTopFinal, yBottomFinal, xRightFinal, xLeftFinal);
@@ -161,10 +161,6 @@ void resetLines() {
 void displayLines() {
   //println(lineOpacity);
   if (lineBottom.velocity == 0) {
-    lineBottom.opacity =  lineBottom.opacity - 20;
-    if(lineBottom.opacity < 0){
-      lineBottom.opacity = 255;
-    }
     lineBottom.display();
   }
   if (lineLeft.velocity == 0)
@@ -173,6 +169,41 @@ void displayLines() {
     lineTop.display();
   if (lineRight.velocity == 0)
     lineRight.display();
+}
+
+void blinkLines() {
+
+  if (lineNumber == 0 || lineNumber == 4 ) {
+    lineBottom.opacity =  lineBottom.opacity - 5;
+    if (lineBottom.opacity < 0) {
+      lineBottom.opacity =  lineBottom.opacity + 5;
+      lineBottom.opacity = 255;
+    }
+  }
+
+  if (lineNumber == 1) {
+    lineLeft.opacity =  lineLeft.opacity - 5;
+    if (lineLeft.opacity < 0) {
+      lineLeft.opacity =  lineLeft.opacity + 5;
+      lineLeft.opacity = 255;
+    }
+  }
+
+  if (lineNumber == 2) {
+    lineTop.opacity =  lineTop.opacity - 5;
+    if (lineTop.opacity < 0) {
+      lineTop.opacity =  lineTop.opacity + 5;
+      lineTop.opacity = 255;
+    }
+  }
+
+ if (lineNumber == 3) {
+  lineRight.opacity =  lineRight.opacity - 5;
+  if (lineRight.opacity < 0) {
+    lineRight.opacity =  lineRight.opacity + 5;
+    lineRight.opacity = 255;
+  }
+ }
 }
 
 
