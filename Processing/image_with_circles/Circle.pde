@@ -19,7 +19,8 @@ class Circle {
     translate(translateX, translateY);
     noStroke();
     //ellipseMode(CENTER);
-    fill(r, g, b, 100);
+    colorMode(RGB);
+    fill(r, g, b);
     ellipse(0, 0, cellSize, cellSize);
     popMatrix();
   }

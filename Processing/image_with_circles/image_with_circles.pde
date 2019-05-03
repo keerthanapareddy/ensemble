@@ -22,7 +22,8 @@ char sendChar[]={'A', 'Q', 'W', 'E', 'R'};
 
 boolean velocityIsZero = false;
 
-int lineNumber =0;
+int lineNumber = 0;
+int lineOpacity = 255;
 
 int loc;
 
@@ -31,6 +32,7 @@ int x0, x1, y0, y1 = 0;
 
 float xLeft, xRight, yTop, yBottom;
 float xLeftFinal, xRightFinal, yTopFinal, yBottomFinal;
+
 
 boolean firstContact = false;
 int serialCount = 0;  
@@ -42,12 +44,13 @@ Line lineBottom;
 Circle pixelCircle;
 
 
+
 void setup() {
   //fullScreen();
-  size(1000, 1000);
+  size(800, 800);
 
-  String portName = "/dev/cu.usbmodem1421";
-  myPort = new Serial(this, portName, 9600);
+  //String portName = "/dev/cu.usbmodem1421";
+  //myPort = new Serial(this, portName, 9600);
 
   img = loadImage("avengers.jpg");  // Make a new instance of a PImage by loading an image file
   background(255);
@@ -74,8 +77,6 @@ void setup() {
   //println(lineNumber);
   //myPort.write(sendChar[lineNumber]);
 
-  colorMode(RGB);
-
   yBottom = height-10;
   xRight = width-10;
   yTop = 10; 
@@ -83,30 +84,89 @@ void setup() {
 
 
   //initialLineVelocity = map(springDisplacement, 20, 160, 0, 42.85); //20 ~ the distance it travels 
-  lineLeft = new Line(xLeft, 0, xLeft, height, initialLineVelocity, color(253, 180, 21));
-  lineRight = new Line(xRight, 0, xRight, height, initialLineVelocity, color(243, 69, 74)); 
-  lineTop = new Line(0, yTop, width, yTop, initialLineVelocity, color(25, 138, 236)); 
-  lineBottom = new Line(0, yBottom, width, yBottom, initialLineVelocity, color(0, 148, 75));
+  lineLeft = new Line(xLeft, 0, xLeft, height, initialLineVelocity, color(253, 180, 21), lineOpacity);
+  lineRight = new Line(xRight, 0, xRight, height, initialLineVelocity, color(243, 69, 74), lineOpacity); 
+  lineTop = new Line(0, yTop, width, yTop, initialLineVelocity, color(25, 138, 236), lineOpacity); 
+  lineBottom = new Line(0, yBottom, width, yBottom, initialLineVelocity, color(0, 148, 75), lineOpacity);
 
-  myPort.write(sendChar[0]);
-  println(sendChar[0]);
+  //myPort.write(sendChar[0]);
+  //println(sendChar[0]);
 }
 
 void draw() {
-  //background(255, 255, 255);
+  background(255, 255, 255);
   constrainVelocities();
   displayLines();
+  //blinkLines();
   moveLines();
+  if (lineRight.velocity == 0 && lineNumber == 0) {
+    findCircles(yTopFinal, yBottomFinal, xRightFinal, xLeftFinal);
+  }
+  drawCircles();
+}
 
-  if (lineNumber == 4 && lineRight.velocity == 0 ) {
-    drawCircles(yTopFinal, yBottomFinal, xRightFinal, xLeftFinal);
+
+//CIRCLES
+void findCircles(float topY, float bottomY, float rightX, float leftX) {
+  img.loadPixels();
+  for (int i=0; i<rows; i++) {
+    for (int j=0; j<cols; j++) {
+      int x = i*cellSize;
+      int y = j*cellSize;
+      int pixelLoc = x + y*img.width; //standard formula to determine location of a pixel in the array
+      int circleLocation = i + j*cols; //array for number of circles is different from the pixel array
+      if ((x >= leftX && x < rightX && y>= topY && y < bottomY) || isCirclePresent[circleLocation] == true) {
+        isCirclePresent[circleLocation] = true;
+        if (lineRight.velocity == 0 ) {
+          resetLines();
+        }
+      }
+    }
   }
 }
 
 
+void drawCircles() {
+  img.loadPixels();
+  for (int i=0; i<rows; i++) {
+    for (int j=0; j<cols; j++) {
+      int x = i*cellSize;
+      int y = j*cellSize;
+      int pixelLoc = x + y*img.width; //standard formula to determine location of a pixel in the array
+      int circleLocation = i + j*cols; //array for number of circles is different from the pixel array
+      float r ;
+      float g ;
+      float b ;
+      if (isCirclePresent[circleLocation] == true) {
+        r = red(img.pixels[pixelLoc]); //looking up rgb values of the image
+        g = green(img.pixels[pixelLoc]);
+        b = blue(img.pixels[pixelLoc]);
+        pixelCircle = new Circle(r, g, b, x+cellSize/2, y+cellSize/2);
+        pixelCircle.display();
+      }
+    }
+  }
+}
+
+
+//LINES
+void resetLines() {
+  lineLeft.resetLeft();
+  lineRight.resetRight();
+  lineTop.resetTop();
+  lineBottom.resetBottom();
+}
+
+
 void displayLines() {
-  if (lineBottom.velocity == 0) 
+  //println(lineOpacity);
+  if (lineBottom.velocity == 0) {
+    lineBottom.opacity =  lineBottom.opacity - 20;
+    if(lineBottom.opacity < 0){
+      lineBottom.opacity = 255;
+    }
     lineBottom.display();
+  }
   if (lineLeft.velocity == 0)
     lineLeft.display();
   if (lineTop.velocity == 0)
@@ -115,41 +175,6 @@ void displayLines() {
     lineRight.display();
 }
 
-//drawing circles
-void drawCircles(float topY, float bottomY, float rightX, float leftX) {
-  img.loadPixels();
-  for (int i=0; i<rows; i++) {
-    for (int j=0; j<cols; j++) {
-
-      int x = i*cellSize;
-      int y = j*cellSize;
-      int pixelLoc = x + y*img.width; //standard formula to determine location of a pixel in the array
-      int circleLocation = i + j*cols; //array for number of circles is different from the pixel array
-
-      float r = 255;
-      float g = 255;
-      float b = 255;
-      //println("leftX:" + leftX+ " right x"+ rightX +  " topY"+ topY + "bottom Y" + bottomY);
-      if ((x >= leftX && x < rightX && y>= topY && y < bottomY) || isCirclePresent[circleLocation] == true) {
-        //println("i am drawing bro");
-        r = red(img.pixels[pixelLoc]); //looking up rgb values of the image
-        g = green(img.pixels[pixelLoc]);
-        b = blue(img.pixels[pixelLoc]);
-        isCirclePresent[circleLocation] = true;
-      }
-      pixelCircle = new Circle(r, g, b, x+cellSize/2, y+cellSize/2);
-      pixelCircle.display();
-    }
-  }
-}
-//}
-
-void resetLines() {
-  lineLeft.resetLeft();
-  lineRight.resetRight();
-  lineTop.resetTop();
-  lineBottom.resetBottom();
-}
 
 void constrainVelocities() {
   rightVelocityConstrained = constrain(lineRight.velocity, 0, 45);
@@ -158,34 +183,40 @@ void constrainVelocities() {
   bottomVelocityConstrained = constrain(lineBottom.velocity, 0, 45);
 }
 
-
 void moveLines() {
   //when neo pixels change color decide which line is moving
   if (lineNumber == 1) {
+    lineBottom.opacity = 255;
     lineBottom.moveUp();
+    lineBottom.display();
     if (lineBottom.velocity == 0) {
       yBottomFinal = lineBottom.yPos1;
-      // println(yBottomFinal);
     }
   } 
-  else if (lineNumber == 2) {
-    //println(lineLeft.velocity);
+
+  if (lineNumber == 2) {
     lineLeft.moveRight();
+    lineLeft.display();
     if (lineLeft.velocity == 0) {
       xLeftFinal = lineLeft.xPos2;
     }
   } 
-  else if (lineNumber == 3) {
+
+  if (lineNumber == 3) {
     lineTop.moveDown();
+    lineTop.display();
     if (lineTop.velocity == 0) {
       yTopFinal = lineTop.yPos2;
     }
   } 
-  else if (lineNumber == 4) {
+
+  if (lineNumber == 4) {
     lineRight.moveLeft();
+    lineRight.display();
+    //println(lineRight.velocity);
     if (lineRight.velocity == 0) {
       xRightFinal = lineRight.xPos2;
-      resetLines();
+      lineNumber = 0;
     }
   } else {
   }
@@ -193,15 +224,13 @@ void moveLines() {
 
 
 void triggerLineMove() {
-  //print("initialLineVelocity:"); 
-  //println(initialLineVelocity);
+  lineNumber++;
+  /*
   if (lineNumber > 0 && lineNumber < 5)
-
-    myPort.write(sendChar[lineNumber]);
-
+   myPort.write(sendChar[lineNumber]);
+   */
 
   if (lineNumber == 1) {
-    
     lineBottom.setVelocity(initialLineVelocity);
   }
 
@@ -225,27 +254,49 @@ void triggerLineMove() {
 
 String inString = "";
 
+
+/*
 void serialEvent (Serial myPort) {
+ 
+ while (myPort.available()>0) {
+ inByte = myPort.read();
+ int inputValue = 50;
+ //println("input : " + inByte);
+ if (inByte == 10) {
+ inputValue = Integer.parseInt(trim(inString));
+ println("got " + inputValue + " from " + inString);
+ inString = "";
+ lineNumber++; 
+ 
+ //String inBuffer = myPort.readString();  
+ //println("input : " + inByte);
+ 
+ //print("Line Number:"); 
+ //println(lineNumber);
+ initialLineVelocity = map(inputValue, 42, 103, 0, 45);
+ triggerLineMove();
+ } else {
+ inString += char(inByte);
+ }
+ }
+ }
+ 
+ */
 
-  while (myPort.available()>0) {
-    inByte = myPort.read();
-    int inputValue = 50;
-    //println("input : " + inByte);
-    if (inByte == 10) {
-      inputValue = Integer.parseInt(trim(inString));
-      println("got " + inputValue + " from " + inString);
-      inString = "";
-      lineNumber++; 
+//key presses
+void keyPressed() {
+  switch(key) {
+  case '1':
+    lineNumber = 5;
+    resetLines();
+    //resetAllLines();
+    break;
+  }
 
-      //String inBuffer = myPort.readString();  
-      //println("input : " + inByte);
-      
-      //print("Line Number:"); 
-      //println(lineNumber);
-      initialLineVelocity = map(inputValue, 42, 103, 0, 45);
-      triggerLineMove();
-    } else {
-      inString += char(inByte);
-    }
+  if (key == 'a') {
+    println("a");
+    inByte = 70;
+    initialLineVelocity = map(inByte, 42, 103, 0, 45);
+    triggerLineMove();
   }
 }

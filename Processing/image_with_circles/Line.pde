@@ -7,9 +7,10 @@ class Line {
   float velocity;
   float mass;
   color c;
+  int opacity;
 
 
-  Line( float tempXPos1, float tempYPos1, float tempXPos2, float tempYPos2, float tempVelocity, color tempColor) {
+  Line( float tempXPos1, float tempYPos1, float tempXPos2, float tempYPos2, float tempVelocity, color tempColor, int tempOpacity) {
     xPos1 = tempXPos1;
     yPos1 = tempYPos1;
     xPos2 = tempXPos2;
@@ -17,13 +18,16 @@ class Line {
     velocity = tempVelocity;
     mass = 2;
     c = tempColor;
+    opacity = tempOpacity;
   }
 
   void display() {
-    stroke(c);
+    //opacity = 255;
+    stroke(c,opacity); //alpha = 0; opacity = 0
     strokeWeight(3);
     line(xPos1, yPos1, xPos2, yPos2);
   }
+
 
   void moveRight() {
     velocity = velocity-1; //can remove this if velocity gets mapped to springlength
@@ -34,7 +38,7 @@ class Line {
     xPos1 = constrain(xPos1, 0, width-10);
     xPos2 = constrain(xPos2, 0, width-10);   
     velocity = constrain(velocity, 0, 45);
-    
+
     //println("r");
   }
 
@@ -52,8 +56,6 @@ class Line {
 
   void moveLeft() {
     velocity = velocity-1;//can remove this if velocity gets mapped to springlength
-
-
     if (velocity > 0) {
       xPos1 = xPos1-velocity;
       xPos2 = xPos2-velocity;
@@ -66,20 +68,16 @@ class Line {
   }
 
   void moveUp() {
-    velocity = velocity-1;//can remove this if velocity gets mapped to springlength
-
-    //println(velocity);
-
+    velocity = velocity-1;
     if (velocity > 0) {
       yPos1 = yPos1-velocity;
       yPos2 = yPos2-velocity;
     }
-
     yPos1 = constrain(yPos1, 0, height-10);
     yPos2 = constrain(yPos2, 0, height-10);
     velocity = constrain(velocity, 0, 45);
 
-     //println("u");
+    //println("u");
   }
 
   void resetLeft() {
